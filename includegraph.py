@@ -30,6 +30,7 @@ if __name__ == "__main__":
             pass
     
     paths = {}
+    doubles = []
     pathlist = \
         subprocess.check_output(['git', 'ls-files'], text=True) \
             .split("\n")
@@ -40,10 +41,16 @@ if __name__ == "__main__":
             split_path = path.split("/")
             if len(split_path) <= 1:
                 continue
+            
             name = split_path[-1]
             if name in paths:
-                print("Occurs twice: ", name)
+                doubles.append(name)
+                #print("Occurs twice: ", name)
+            
             paths[name] = path
+            
+            if name in doubles:
+                del paths[name]
         except ValueError:
             pass
     
@@ -170,6 +177,9 @@ if __name__ == "__main__":
                             continue
                         
                         for _to in associations[_from]:
+                            if _to in doubles and '???' not in dependencies:
+                                dependencies = ['???'] + dependencies
+                            
                             if _to not in paths:
                                 continue
                             
@@ -209,14 +219,19 @@ if __name__ == "__main__":
                     if not _from.startswith(last_from + "/"):
                         continue
                     
+                    #with open("test.log","w") as f:
+                    #    f.write(str(associations))
+                    
                     for _to in associations[_from]:
-                        if _to not in paths:
+                        if _to in doubles:
+                            _str = _from + " -> " + _to+" (filename occurs at least twice)\n"
+                        elif _to not in paths:
                             continue
-                        
-                        if not paths[_to].startswith(last_to + "/"):
+                        elif not paths[_to].startswith(last_to + "/"):
                             continue
+                        else:
+                            _str = _from + " -> " + paths[_to]+"\n"
                         
-                        _str = _from + " -> " + paths[_to]+"\n"
                         if len(_filter) > 0 and _filter not in _str:
                             continue
                         
