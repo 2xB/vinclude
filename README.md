@@ -1,5 +1,5 @@
 # vinclude
-
+[![Last release](https://github.com/github/docs/actions/workflows/main.yml/badge.svg)](https://github.com/2xB/vinclude/releases/)
 [![GitHub license](https://img.shields.io/github/license/2xB/vinclude.svg)](https://github.com/2xB/vinclude)
 [![pypi version](https://img.shields.io/pypi/v/vinclude.svg)](https://pypi.org/project/vinclude/)
 
@@ -7,7 +7,7 @@ Visual C/C++ project include graphs, in a simple command line UI, for Linux. Use
 
 ## Overview
 
-When launched in a directory, `vinclude` looks for `#include` directives and tries to match them to files in that directory.
+When launched, `vinclude` looks for `#include` directives in the current directory and tries to match them to files in that directory.
 Then it visualizes which subdirectory includes files from which other subdirectory:
 
 ![Demo screenshot](example.png)
