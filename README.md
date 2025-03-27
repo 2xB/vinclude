@@ -1,5 +1,5 @@
 # vinclude
-[![Last release](https://github.com/github/docs/actions/workflows/main.yml/badge.svg)](https://github.com/2xB/vinclude/releases/)
+[![Last release](https://github.com/2xB/vinclude/actions/workflows/python-publish.yml/badge.svg)](https://github.com/2xB/vinclude/releases/)
 [![GitHub license](https://img.shields.io/github/license/2xB/vinclude.svg)](https://github.com/2xB/vinclude)
 [![pypi version](https://img.shields.io/pypi/v/vinclude.svg)](https://pypi.org/project/vinclude/)
 
