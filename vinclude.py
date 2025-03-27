@@ -1,18 +1,30 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import subprocess
-import tempfile
+    
+source_extensions = [".c", ".cc", ".cp", ".cpp", ".cxx", ".c++"] # From https://www.ibm.com/docs/en/xl-c-and-cpp-aix/16.1?topic=cc-xl-input-output-files
+header_extensions = [".h", ".hh", ".hp", ".hpp", ".hxx", ".h++"]
+extensions = source_extensions + header_extensions
 
-if __name__ == "__main__":
+def main():
     print("Loading include graph...")
+
+    # List occurrences of "#include"
+    # ===
 
     includelist = subprocess.check_output(['grep', '-r', '--exclude-dir=".*"', '#include'], text=True)
     #includelist = subprocess.check_output(['git', 'grep', '#include'], text=True)
-    
+
+
+    # Build associations
+    # ===
+
+    # List of which files include which other files
     associations = {}
-    
+
+    # Track included files to print warning if header files are never included
     includes = []
-    
+
     for entry in includelist.split("\n"):
         if ":#include" not in entry:
             continue
@@ -36,13 +48,28 @@ if __name__ == "__main__":
         except ValueError:
             pass
     
-    paths = {}
-    doubles = []
+    
+    # Get all relevant files
+    # ===
+
+    cmd = ['find', '-not', '-path', '*/.*', '-type', 'f', '-printf', r"%P\n"]
+    #cmd = ['git', 'ls-files']
     pathlist = \
-        subprocess.check_output(['find', '-type', 'f', '-printf', r"%P\n"], text=True) \
+        subprocess.check_output(cmd, text=True) \
             .split("\n")
-        #subprocess.check_output(['git', 'ls-files'], text=True) \
     pathlist.sort()
+
+    # Exclude non-C/non-C++ files
+    pathlist = [path for path in pathlist if any([path.endswith(ext) for ext in extensions])]
+
+
+    # Build map of where each file is
+    # ===
+
+    # All top-level paths
+    paths = {}
+    # Filenames that occur at least twice (these can't be matched with this simple static analysis)
+    doubles = []
     for path in pathlist:
         try:
             split_path = path.split("/")
@@ -50,22 +77,27 @@ if __name__ == "__main__":
                 continue
             
             name = split_path[-1]
-            if (name.endswith(".h") or name.endswith(".hh")) and name not in includes:
+            
+            # Print information if header files are not used
+            if (not any([name.endswith(ext) for ext in header_extensions])) and name not in includes:
                 print("Seemingly unused:", path)
             
             if name in paths:
                 doubles.append(name)
-                #print("Occurs twice: ", name)
-            
-            paths[name] = path
-            
-            if name in doubles:
+                print("Occurs twice: ", name)
                 del paths[name]
+            elif name not in doubles:
+                paths[name] = path
+
         except ValueError:
             pass
+
+
+    # Create list of toplevel folders
+    # ===
     
     toplevels = {}
-    
+
     for _from in pathlist:
         split_path = _from.split("/")
         
@@ -74,9 +106,9 @@ if __name__ == "__main__":
             if base not in toplevels:
                 toplevels[base] = []
             toplevels[base].append(_from)
-    
+
     """
-    with open("includegraph.dot", "w") as f:
+    with open("vinclude.dot", "w") as f:
         f.write("digraph {\n")
         
         f.write("splines=line;")
@@ -94,10 +126,12 @@ if __name__ == "__main__":
                     f.write('"' + _from + '" -> "' + paths[entry] + '";\n')
         
         f.write("}\n")
-    
-    print(subprocess.check_output(['dot', '-Tpdf', 'includegraph.dot', '-o', 'includegraph.pdf'], text=True))
+
+    print(subprocess.check_output(['dot', '-Tpdf', 'vinclude.dot', '-o', 'vinclude.pdf'], text=True))
     """
-    
+
+    # Show UI
+    # ===
     # Based on this great example by claymcleod: https://gist.github.com/claymcleod/b670285f334acd56ad1c
     import curses
 
@@ -138,6 +172,8 @@ if __name__ == "__main__":
             
             cursoryx = (0,0)
             
+            # Interpret keyboard inputs
+            # ===
             if k == "\t":
                 detail_view = not detail_view
             elif k == "\n":
@@ -147,6 +183,9 @@ if __name__ == "__main__":
                     _filter = _filter[:max(len(_filter)-1,0)]
                 elif len(k) == 1 and k != "\n":
                     _filter += k
+                elif k == "KEY_BACKSPACE":
+                    if len(_filter) > 0:
+                        _filter = _filter[:-1] 
                 elif k == "KEY_DOWN":
                     detail_y += 10
                 elif k == "KEY_UP":
@@ -172,6 +211,9 @@ if __name__ == "__main__":
                     selected_entry -= 1
                     detail_x = 0
                     detail_y = 0
+            
+            # Paint GUI
+            # ===
             
             selected_index %= len(toplevels)
             
@@ -229,9 +271,6 @@ if __name__ == "__main__":
                     if not _from.startswith(last_from + "/"):
                         continue
                     
-                    #with open("test.log","w") as f:
-                    #    f.write(str(associations))
-                    
                     for _to in associations[_from]:
                         if _to in doubles:
                             _str = _from + " -> " + _to+" (filename occurs at least twice)\n"
@@ -265,7 +304,7 @@ if __name__ == "__main__":
             stdscr.attron(curses.color_pair(3))
             try:
                 stdscr.addstr(height-1, 0, " " * (width-1))
-                stdscr.addstr(height-1, 2, "includegraph.py | q: exit | Tab: Toggle detail view | Enter: Toggle fullscreen" + str(repr(k)))
+                stdscr.addstr(height-1, 2, "vinclude.py | q: exit | Tab: Toggle detail view | Enter: Toggle fullscreen" + str(repr(k)))
             except curses.error:
                 pass
             
@@ -303,3 +342,6 @@ if __name__ == "__main__":
             k = stdscr.getkey()
 
     curses.wrapper(draw_menu)
+
+if __name__ == "__main__":
+    main()
