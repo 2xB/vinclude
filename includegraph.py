@@ -3,11 +3,11 @@
 import subprocess
 import tempfile
 
-def git_grep_include():
-    return subprocess.check_output(['git', 'grep', '#include'], text=True)
-
 if __name__ == "__main__":
-    includelist = git_grep_include()
+    print("Loading include graph...")
+
+    includelist = subprocess.check_output(['grep', '-r', '--exclude-dir=".*"', '#include'], text=True)
+    #includelist = subprocess.check_output(['git', 'grep', '#include'], text=True)
     
     associations = {}
     
@@ -39,9 +39,9 @@ if __name__ == "__main__":
     paths = {}
     doubles = []
     pathlist = \
-        subprocess.check_output(['git', 'ls-files'], text=True) \
+        subprocess.check_output(['find', '-type', 'f', '-printf', r"%P\n"], text=True) \
             .split("\n")
-        #subprocess.check_output(['find', '-type', 'f', '-printf', r"%P\n"], text=True) \
+        #subprocess.check_output(['git', 'ls-files'], text=True) \
     pathlist.sort()
     for path in pathlist:
         try:
