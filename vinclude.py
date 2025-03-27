@@ -12,7 +12,7 @@ def main():
     # List occurrences of "#include"
     # ===
 
-    includelist = subprocess.check_output(['grep', '-r', '--exclude-dir=".*"', '#include'], text=True)
+    includelist = subprocess.check_output(['grep', '-r', '--exclude-dir', '.*', '#include'], text=True)
     #includelist = subprocess.check_output(['git', 'grep', '#include'], text=True)
 
 
