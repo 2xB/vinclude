@@ -107,28 +107,6 @@ def main():
                 toplevels[base] = []
             toplevels[base].append(_from)
 
-    """
-    with open("vinclude.dot", "w") as f:
-        f.write("digraph {\n")
-        
-        f.write("splines=line;")
-        
-        for base in toplevels:
-            f.write("subgraph {\n")
-            f.write('label="{}";\n'.format(base));
-            for entry in toplevels[base]:
-                f.write('"{}";\n'.format(entry))
-            f.write("}\n")
-        
-        for _from in associations:
-            for entry in associations[_from]:
-                if entry in paths:
-                    f.write('"' + _from + '" -> "' + paths[entry] + '";\n')
-        
-        f.write("}\n")
-
-    print(subprocess.check_output(['dot', '-Tpdf', 'vinclude.dot', '-o', 'vinclude.pdf'], text=True))
-    """
 
     # Show UI
     # ===
@@ -304,7 +282,10 @@ def main():
             stdscr.attron(curses.color_pair(3))
             try:
                 stdscr.addstr(height-1, 0, " " * (width-1))
-                stdscr.addstr(height-1, 2, "vinclude.py | q: exit | Tab: Toggle detail view | Enter: Toggle fullscreen" + str(repr(k)))
+                line = "vinclude.py | q: exit | tab: toggle detail view | enter: toggle fullscreen"
+                if False: # debug output
+                    line += " | Last input: " + str(repr(k))
+                stdscr.addstr(height-1, 2, line)
             except curses.error:
                 pass
             
