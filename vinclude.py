@@ -133,6 +133,8 @@ def main():
         last_from = None
         last_to = None
 
+        skip_folders = 0
+
         # Clear and refresh the screen for a blank canvas
         stdscr.clear()
         stdscr.refresh()
@@ -199,12 +201,22 @@ def main():
             # ===
             
             selected_index %= len(toplevels)
+
+            size = height//2-3
+
+            if selected_index > size + skip_folders:
+                skip_folders = selected_index - size
+            elif selected_index <= skip_folders:
+                skip_folders = selected_index
             
             try:
                 last_from = ""
                 last_to = ""
                 pad.move(0,0)
                 for i, base in enumerate(toplevels):
+                    if i < skip_folders:
+                        continue
+
                     dependencies = []
                     
                     for _from in associations:
