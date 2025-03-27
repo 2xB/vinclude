@@ -60,7 +60,7 @@ def main():
     pathlist.sort()
 
     # Exclude non-C/non-C++ files
-    pathlist = [path for path in pathlist if any([path.endswith(ext) for ext in extensions])]
+    pathlist = [path for path in pathlist if any([path.lower().endswith(ext) for ext in extensions])]
 
 
     # Build map of where each file is
@@ -79,7 +79,7 @@ def main():
             name = split_path[-1]
             
             # Print information if header files are not used
-            if (not any([name.endswith(ext) for ext in header_extensions])) and name not in includes:
+            if (not any([name.lower().endswith(ext) for ext in header_extensions])) and name not in includes:
                 print("Seemingly unused:", path)
             
             if name in paths:
