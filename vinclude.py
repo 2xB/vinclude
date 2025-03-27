@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import subprocess
+import sys
     
 source_extensions = [".c", ".cc", ".cp", ".cpp", ".cxx", ".c++"] # From https://www.ibm.com/docs/en/xl-c-and-cpp-aix/16.1?topic=cc-xl-input-output-files
 header_extensions = [".h", ".hh", ".hp", ".hpp", ".hxx", ".h++"]
@@ -106,6 +107,10 @@ def main():
             if base not in toplevels:
                 toplevels[base] = []
             toplevels[base].append(_from)
+    
+    if len(toplevels) < 1:
+        print("Error: No subfolders with relevant C/C++ source code available. Please try somewhere else.")
+        sys.exit(-1)
 
 
     # Show UI
