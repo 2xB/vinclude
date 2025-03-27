@@ -11,6 +11,8 @@ if __name__ == "__main__":
     
     associations = {}
     
+    includes = []
+    
     for entry in includelist.split("\n"):
         if ":#include" not in entry:
             continue
@@ -21,6 +23,11 @@ if __name__ == "__main__":
         try:
             _from, _to = entry.split(':#include "')
             _to = _to[:-1]
+            if "/" in _to:
+                _to = _to.split("/")[-1]
+            
+            if _to not in includes:
+                includes.append(_to)
             
             if _from not in associations:
                 associations[_from] = []
@@ -43,6 +50,9 @@ if __name__ == "__main__":
                 continue
             
             name = split_path[-1]
+            if (name.endswith(".h") or name.endswith(".hh")) and name not in includes:
+                print("Seemingly unused:", path)
+            
             if name in paths:
                 doubles.append(name)
                 #print("Occurs twice: ", name)
